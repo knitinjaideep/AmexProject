@@ -1,9 +1,13 @@
 package com.amex.school.student.controller;
 
+import com.amex.school.common.GlobalConstants;
+import com.amex.school.common.GlobalLogger;
 import com.amex.school.student.model.ClassNames;
 import com.amex.school.student.model.Student;
 import com.amex.school.student.service.StudentService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,49 +15,137 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Controller class for handling student-related HTTP requests.
+ */
 @RestController
 @RequestMapping("/v1/students")
 @AllArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
+    private final GlobalLogger logger;
+
+    /**
+     * Retrieves all students.
+     *
+     * @return ResponseEntity containing a list of students or an error message
+     */
     @GetMapping
-    public List<Student> getAllStudents(){
-        return studentService.getAllStudents();
+    public ResponseEntity<?> getAllStudents(){
+        try {
+            logger.logInfo(GlobalConstants.FETCH_ALL_STUDENTS);
+            List<Student> students = studentService.getAllStudents();
+            return ResponseEntity.ok(students);
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_FETCH_ALL_STUDENTS, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch all students. Error " + ex.getMessage());
+        }
     }
 
+    /**
+     * Retrieves a student by ID.
+     *
+     * @param studentId The ID of the student to retrieve
+     * @return ResponseEntity containing the student or an error message
+     */
     @GetMapping("/id/{student_id}")
-    public Optional<Student> getStudentById(@PathVariable("student_id") Long studentId) {
-        return studentService.getStudentById(studentId);
+    public ResponseEntity<?> getStudentById(@PathVariable("student_id") Long studentId) {
+        try {
+            logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_ID);
+            Optional<Student> student =  studentService.getStudentById(studentId);
+            if (student.isPresent()) {
+                return ResponseEntity.ok(student);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found with ID: " + studentId);
+            }
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch student with ID: " + studentId + ". Error: " + ex.getMessage());
+        }
     }
+
+    /**
+     * Retrieves students by name.
+     *
+     * @param name The name of the students to retrieve
+     * @return ResponseEntity containing a list of students or an error message
+     */
     @GetMapping("/name/{name}")
-    public List<Student> getStudentsByName(@PathVariable String name) {
-        return studentService.getStudentsByName(name);
+    public ResponseEntity<?> getStudentsByName(@PathVariable String name) {
+        try{
+            logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_NAME, name);
+            List<Student> students = studentService.getStudentsByName(name);
+            return ResponseEntity.ok(students);
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch students by name: " + name + ". Error: " + ex.getMessage());
+        }
     }
 
+    /**
+     * Retrieves students by class name.
+     *
+     * @param className The class name of the students to retrieve
+     * @return ResponseEntity containing a list of students or an error message
+     */
     @GetMapping("/class/{class_name}")
-    public List<Student> getStudentsByClassName(@PathVariable("class_name") String className) {
-        ClassNames classNames = ClassNames.valueOf(className);
-        return studentService.getStudentsByClassName(classNames);
+    public ResponseEntity<?> getStudentsByClassName(@PathVariable("class_name") String className) {
+        try{
+            logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_CLASSNAME, className);
+            ClassNames classNames = ClassNames.valueOf(className);
+            List<Student> students =  studentService.getStudentsByClassName(classNames);
+            return ResponseEntity.ok(students);
+        } catch (Exception ex){
+            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch students by class name: " + className + ". Error: " + ex.getMessage());
+        }
+
     }
 
+    /**
+     * Adds a new student.
+     *
+     * @param studentDetails The details of the student to add
+     * @return ResponseEntity indicating success or failure
+     */
     @PostMapping
-    public void addNewStudent(@RequestBody Student student){
-        // Parse date strings to LocalDate objects
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        student.setDateOfBirth(LocalDate.parse(student.getDateOfBirth().toString(), formatter));
-        student.setJoiningDate(LocalDate.parse(student.getJoiningDate().toString(), formatter));
-        studentService.addStudent(student);
+    public ResponseEntity<String> addNewStudent(@RequestBody Student studentDetails){
+        try {
+            logger.logInfo(GlobalConstants.ADD_NEW_STUDENT, studentDetails);
+            // Parse date strings to LocalDate objects
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            studentDetails.setDateOfBirth(LocalDate.parse(studentDetails.getDateOfBirth().toString(), formatter));
+            studentDetails.setJoiningDate(LocalDate.parse(studentDetails.getJoiningDate().toString(), formatter));
+            studentService.addStudent(studentDetails);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Student added successfully");
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add new student. Error: " + ex.getMessage());
+        }
     }
 
+    /**
+     * Updates an existing student.
+     *
+     * @param studentId      The ID of the student to update
+     * @param studentDetails The updated details of the student
+     * @return ResponseEntity indicating success or failure
+     */
     @PutMapping("{student_id}")
-    public void updateStudent(@PathVariable("student_id") Long studentId, @RequestBody Student studentDetails) {
-        studentService.updateStudent(studentId, studentDetails);
+    public ResponseEntity<String> updateStudent(@PathVariable("student_id") Long studentId, @RequestBody Student studentDetails) {
+        try {
+            logger.logInfo(GlobalConstants.UPDATE_STUDENT, studentDetails);
+            studentService.updateStudent(studentId, studentDetails);
+            return ResponseEntity.ok("Student updated successfully");
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_UPDATE_STUDENT, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update student with ID: " + studentId + ". Error: " + ex.getMessage());
+        }
     }
 }
