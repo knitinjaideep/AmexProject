@@ -27,6 +27,17 @@ public class StudentController {
     private final GlobalLogger logger;
 
     /**
+     * Helper method to handle exceptions uniformly and return ResponseEntity with appropriate status code and error message.
+     * @param message Error message
+     * @param ex Exception
+     * @return ResponseEntity with error message and status code
+     */
+    private ResponseEntity<String> handleException(String message, Exception ex) {
+        logger.logError(message, ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + message + ". " + ex.getMessage());
+    }
+
+    /**
      * Retrieves all students.
      *
      * @return ResponseEntity containing a list of students or an error message
@@ -39,7 +50,7 @@ public class StudentController {
             return ResponseEntity.ok(students);
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_FETCH_ALL_STUDENTS, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch all students. Error " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_FETCH_ALL_STUDENTS, ex);
         }
     }
 
@@ -61,7 +72,7 @@ public class StudentController {
             }
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch student with ID: " + studentId + ". Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex);
         }
     }
 
@@ -79,7 +90,7 @@ public class StudentController {
             return ResponseEntity.ok(students);
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch students by name: " + name + ". Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex);
         }
     }
 
@@ -98,7 +109,7 @@ public class StudentController {
             return ResponseEntity.ok(students);
         } catch (Exception ex){
             logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch students by class name: " + className + ". Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex);
         }
 
     }
@@ -121,7 +132,7 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.CREATED).body("Student added successfully");
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add new student. Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex);
         }
     }
 
@@ -140,7 +151,7 @@ public class StudentController {
             return ResponseEntity.ok("Student updated successfully");
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_UPDATE_STUDENT, ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update student with ID: " + studentId + ". Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_UPDATE_STUDENT, ex);
         }
     }
 
@@ -158,7 +169,7 @@ public class StudentController {
             return ResponseEntity.ok("Student delete successfully");
         } catch (Exception ex) {
             logger.logError(GlobalConstants.ERROR_DELETE_STUDENT);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete student with ID: " + studentId + ". Error: " + ex.getMessage());
+            return handleException(GlobalConstants.ERROR_DELETE_STUDENT, ex);
         }
     }
 

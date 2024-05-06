@@ -83,8 +83,6 @@ public class StudentService {
      */
     public void updateStudent(Long id, Student studentDetails) {
         logger.logInfo(GlobalConstants.UPDATE_STUDENT, studentDetails);
-        Assert.notNull(id, "ID must not be null");
-        Assert.notNull(studentDetails, "Student details must not be null");
         StudentValidator.validateStudent(studentDetails);
         Optional<Student> optionalStudent = studentRepository.findById(id);
         if (optionalStudent.isPresent()) {
@@ -104,6 +102,9 @@ public class StudentService {
      * @param studentId The ID of the student to delete
      */
     public void deleteStudent(Long studentId) {
+        if(!studentRepository.existsById(studentId)){
+            throw new IllegalArgumentException("Student not found with ID: " + studentId);
+        }
         logger.logInfo(GlobalConstants.DELETE_STUDENT);
         studentRepository.deleteById(studentId);
     }
