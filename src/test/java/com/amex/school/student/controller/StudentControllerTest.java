@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class StudentControllerTest {
     @Mock
@@ -83,7 +82,7 @@ class StudentControllerTest {
     }
 
     @Test
-    void testAddNewStudent() {
+    void testAddNewStudent_success() {
         Student student = new Student();
         student.setName("Nitin Kotcherlakota");
         student.setDateOfBirth(LocalDate.parse("1997-09-14"));
@@ -112,5 +111,79 @@ class StudentControllerTest {
 
         assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
+    }
+
+    @Test
+    void testAddNewStudentFailure_MissingName() {
+        // Create a student with missing name
+        Student student = new Student();
+        student.setDateOfBirth(LocalDate.parse("1997-09-14"));
+        student.setJoiningDate(LocalDate.parse("2024-03-01"));
+        student.setClassName(ClassNames.MATHEMATICS);
+
+        // Configure service to throw exception
+        doThrow(new IllegalArgumentException("Name must not be null")).when(studentService).addStudent(student);
+
+        // Call controller method
+        ResponseEntity<String> response = studentController.addNewStudent(student);
+
+        // Verify response
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Error: Failed to add a new student. Name must not be null", response.getBody());
+    }
+
+    @Test
+    void testUpdateStudentFailure_StudentNotFound() {
+        // Create a student with valid data
+        long studentId = 1L;
+        Student student = new Student();
+        student.setName("Nitin Kotcherlakota");
+        student.setDateOfBirth(LocalDate.parse("1997-09-14"));
+        student.setJoiningDate(LocalDate.parse("2024-03-01"));
+        student.setClassName(ClassNames.SCIENCE);
+
+        // Configure service to return empty optional, indicating student not found
+        doThrow(new IllegalArgumentException("Student not found")).when(studentService).updateStudent(studentId, student);
+
+        // Call controller method
+        ResponseEntity<String> response = studentController.updateStudent(studentId, student);
+
+        // Verify response
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Error: Failed to update the student. Student not found", response.getBody());
+    }
+
+    @Test
+    void testUpdateStudentFailure_InvalidDateFormat() {
+        // Create a student with invalid date format
+        long studentId = 1L;
+        Student student = new Student();
+        student.setName("Nitin Kotcherlakota");
+        student.setDateOfBirth(LocalDate.parse("1997-09-14"));
+        student.setJoiningDate(LocalDate.parse("2024-03-01"));
+        student.setClassName(ClassNames.SCIENCE);
+
+        // Configure service to throw exception for invalid date format
+        doThrow(new IllegalArgumentException("Invalid date format")).when(studentService).updateStudent(studentId, student);
+
+        // Call controller method
+        ResponseEntity<String> response = studentController.updateStudent(studentId, student);
+
+        // Verify response
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Error: Failed to update the student. Invalid date format", response.getBody());
+    }
+
+    @Test
+    void testDeleteStudentFailure_StudentNotFound() {
+        // Configure service to throw exception indicating student not found
+        doThrow(new IllegalArgumentException("Student not found")).when(studentService).deleteStudent(1L);
+
+        // Call controller method
+        ResponseEntity<String> response = studentController.deleteStudent(1L);
+
+        // Verify response
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("Error: Failed to delete the student. Student not found", response.getBody());
     }
 }

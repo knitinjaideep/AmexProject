@@ -33,7 +33,7 @@ public class GlobalLogger {
         logger.error(message);
     }
 
-    public void logError(String message, Throwable throwable) {
-        logger.error(message, throwable);
+    public void logError(String message, Throwable throwable, Object... args) {
+        logger.error(message, throwable, args);
     }
 }

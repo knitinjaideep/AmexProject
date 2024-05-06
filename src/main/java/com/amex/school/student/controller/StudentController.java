@@ -32,9 +32,10 @@ public class StudentController {
      * @param ex Exception
      * @return ResponseEntity with error message and status code
      */
-    private ResponseEntity<String> handleException(String message, Exception ex) {
-        logger.logError(message, ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + message + ". " + ex.getMessage());
+    private ResponseEntity<String> handleException(String message, Exception ex, Object... args) {
+        logger.logError(message, ex, args);
+        String formattedMessage = "Error: " + message + ". " + ex.getMessage();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(formattedMessage);
     }
 
     /**
@@ -49,7 +50,6 @@ public class StudentController {
             List<Student> students = studentService.getAllStudents();
             return ResponseEntity.ok(students);
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_FETCH_ALL_STUDENTS, ex);
             return handleException(GlobalConstants.ERROR_FETCH_ALL_STUDENTS, ex);
         }
     }
@@ -63,7 +63,7 @@ public class StudentController {
     @GetMapping("/id/{student_id}")
     public ResponseEntity<?> getStudentById(@PathVariable("student_id") Long studentId) {
         try {
-            logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_ID);
+            logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_ID, studentId);
             Optional<Student> student =  studentService.getStudentById(studentId);
             if (student.isPresent()) {
                 return ResponseEntity.ok(student);
@@ -71,8 +71,7 @@ public class StudentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found with ID: " + studentId);
             }
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex);
-            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex);
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_ID, ex, studentId);
         }
     }
 
@@ -89,8 +88,7 @@ public class StudentController {
             List<Student> students = studentService.getStudentsByName(name);
             return ResponseEntity.ok(students);
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex);
-            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex);
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_NAME, ex, name);
         }
     }
 
@@ -108,8 +106,7 @@ public class StudentController {
             List<Student> students =  studentService.getStudentsByClassName(classNames);
             return ResponseEntity.ok(students);
         } catch (Exception ex){
-            logger.logError(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex);
-            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex);
+            return handleException(GlobalConstants.ERROR_FETCH_STUDENT_BY_CLASSNAME, ex, className);
         }
 
     }
@@ -131,8 +128,7 @@ public class StudentController {
             studentService.addStudent(studentDetails);
             return ResponseEntity.status(HttpStatus.CREATED).body("Student added successfully");
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex);
-            return handleException(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex);
+            return handleException(GlobalConstants.ERROR_ADD_NEW_STUDENT, ex, studentDetails);
         }
     }
 
@@ -150,8 +146,7 @@ public class StudentController {
             studentService.updateStudent(studentId, studentDetails);
             return ResponseEntity.ok("Student updated successfully");
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_UPDATE_STUDENT, ex);
-            return handleException(GlobalConstants.ERROR_UPDATE_STUDENT, ex);
+            return handleException(GlobalConstants.ERROR_UPDATE_STUDENT, ex, studentId);
         }
     }
 
@@ -166,10 +161,9 @@ public class StudentController {
         try {
             logger.logInfo(GlobalConstants.DELETE_STUDENT, studentId);
             studentService.deleteStudent(studentId);
-            return ResponseEntity.ok("Student delete successfully");
+            return ResponseEntity.ok("Student deleted successfully");
         } catch (Exception ex) {
-            logger.logError(GlobalConstants.ERROR_DELETE_STUDENT);
-            return handleException(GlobalConstants.ERROR_DELETE_STUDENT, ex);
+            return handleException(GlobalConstants.ERROR_DELETE_STUDENT, ex, studentId);
         }
     }
 

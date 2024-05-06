@@ -47,7 +47,6 @@ public class StudentService {
      */
     public Optional<Student> getStudentById(Long id){
         logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_ID, id);
-        Assert.notNull(id, "ID must not be null");
         return studentRepository.findById(id);
     }
 
@@ -59,7 +58,6 @@ public class StudentService {
      */
     public List<Student> getStudentsByName(String name){
         logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_NAME, name);
-        Assert.hasText(name, "Name must not be empty");
         return studentRepository.findByName(name);
     }
 
@@ -71,7 +69,6 @@ public class StudentService {
      */
     public List<Student> getStudentsByClassName(ClassNames className){
         logger.logInfo(GlobalConstants.FETCH_STUDENT_BY_CLASSNAME, className);
-        Assert.notNull(className, "Class name must not be null");
         return studentRepository.findByClassName(className);
     }
 
