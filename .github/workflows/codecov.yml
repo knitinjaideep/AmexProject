@@ -20,7 +20,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          ./gradlew clean test
+          mvn clean test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
