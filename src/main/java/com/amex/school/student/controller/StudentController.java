@@ -8,13 +8,8 @@ import com.amex.school.student.service.StudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -148,4 +143,23 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update student with ID: " + studentId + ". Error: " + ex.getMessage());
         }
     }
+
+    /**
+     * Deletes an existing student.
+     *
+     * @param studentId The ID of the student to delete
+     * @return ResponseEntity indicating success or failure
+     */
+    @DeleteMapping(path="{studentId}")
+    public ResponseEntity<String> deleteStudent(@PathVariable("studentId") Long studentId){
+        try {
+            logger.logInfo(GlobalConstants.DELETE_STUDENT, studentId);
+            studentService.deleteStudent(studentId);
+            return ResponseEntity.ok("Student delete successfully");
+        } catch (Exception ex) {
+            logger.logError(GlobalConstants.ERROR_DELETE_STUDENT);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete student with ID: " + studentId + ". Error: " + ex.getMessage());
+        }
+    }
+
 }

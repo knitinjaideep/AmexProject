@@ -46,8 +46,8 @@ public class StudentValidator {
      */
     private static void validateJoiningDate(LocalDate joiningDate, LocalDate dateOfBirth) {
         Assert.notNull(joiningDate, "Joining date must not be null");
-        if (joiningDate.isAfter(dateOfBirth)) {
-            throw new IllegalArgumentException("Joining date cannot be after date of birth");
+        if (joiningDate.isBefore(dateOfBirth)) {
+            throw new IllegalArgumentException("Joining date cannot be before date of birth");
         }
     }
 

@@ -97,4 +97,14 @@ public class StudentService {
             throw new IllegalArgumentException("Student not found with ID: " + id);
         }
     }
+
+    /**
+     * Deletes an existing record
+     *
+     * @param studentId The ID of the student to delete
+     */
+    public void deleteStudent(Long studentId) {
+        logger.logInfo(GlobalConstants.DELETE_STUDENT);
+        studentRepository.deleteById(studentId);
+    }
 }
